@@ -1,0 +1,592 @@
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --clr-bg:           #dce9f8;
+  --clr-surface:      #ffffff;
+  --clr-text:         #1a1a2e;
+  --clr-label:        #8a97b0;
+  --clr-divider:      #e0e8f4;
+
+  --clr-icon-rating:  linear-gradient(135deg, #f5a623, #f0710c);
+  --clr-icon-boost:   linear-gradient(135deg, #a78bfa, #7b61ff);
+  --clr-icon-settings:linear-gradient(135deg, #4facfe, #0972d3);
+
+  --clr-coin:         #f5c842;
+  --clr-coin-deep:    #c8902b;
+
+  --radius-card:      18px;
+  --radius-icon:      16px;
+
+  --shadow-card:      0 8px 32px rgba(80, 120, 200, .13);
+  --shadow-icon:      0 4px 14px rgba(0, 0, 0, .12);
+  --shadow-btn:       0 10px 0 0 var(--clr-coin-deep),
+                      0 14px 30px rgba(200, 144, 43, .6),
+                      inset 0 3px 8px rgba(255, 255, 255, .35);
+  --shadow-btn-press: 0 2px 0 0 var(--clr-coin-deep),
+                      0 6px 16px rgba(200, 144, 43, .5),
+                      inset 0 3px 8px rgba(255, 255, 255, .22);
+
+  --ease-out:         cubic-bezier(.4, 0, .2, 1);
+  --t-fast:           .13s var(--ease-out);
+
+  /* ⚠️ Must match DIGIT_H constant in main.js */
+  --digit-h:          52px;
+}
+
+/* ═══════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing:              border-box;
+  margin:                  0;
+  padding:                 0;
+  /* Глобальный запрет выделения текста */
+  user-select:             none;
+  -webkit-user-select:     none;
+  /* iOS: блокирует pop-up меню при долгом тапе */
+  -webkit-touch-callout:   none;
+}
+
+body {
+  font-family:         'Nunito Sans', sans-serif;
+  background:          var(--clr-bg);
+  min-height:          100dvh;
+  display:             flex;
+  align-items:         center;
+  justify-content:     center;
+  /* Запрет bounce-скролла и overscroll glow */
+  overscroll-behavior: none;
+  overflow:            hidden;
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT — APP SHELL
+═══════════════════════════════════════════ */
+.app {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100dvh;
+  background: var(--clr-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+  /* Блокируем тач-жесты на уровне игрового контейнера.
+     body намеренно не тронут — модальные окна смогут переопределить на auto. */
+  touch-action: none;
+}
+
+/* ═══════════════════════════════════════════
+   BALANCE CARD
+═══════════════════════════════════════════ */
+.balance-card {
+  width: calc(100% - 32px);
+  margin-top: 32px;
+  background: var(--clr-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 18px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.balance-card__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--clr-label);
+}
+
+.balance-card__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ═══════════════════════════════════════════
+   ODOMETER
+═══════════════════════════════════════════ */
+.odometer {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  height: var(--digit-h);
+}
+
+.odometer__reel {
+  height: var(--digit-h);
+  overflow: hidden;
+}
+
+.odometer__strip {
+  display: flex;
+  flex-direction: column;
+  /* transition defined via JS (delay varies per reel) */
+  transition: transform .32s var(--ease-out);
+  will-change: transform;
+}
+
+.odometer__strip span {
+  /* ⚠️ height must equal --digit-h / DIGIT_H in main.js */
+  height: var(--digit-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 44px;
+  font-weight: 900;
+  color: var(--clr-text);
+  line-height: 1;
+}
+
+.odometer__sep {
+  font-family: 'Nunito', sans-serif;
+  font-size: 44px;
+  font-weight: 900;
+  color: var(--clr-text);
+  line-height: var(--digit-h);
+  align-self: center;
+  /* Tighten separator spacing */
+  margin: 0 1px;
+}
+
+/* ═══════════════════════════════════════════
+   COIN BADGE
+═══════════════════════════════════════════ */
+.coin-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--clr-coin) 0%, #e8a800 100%);
+  box-shadow: 0 2px 8px rgba(200, 144, 43, .4);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.coin-badge svg {
+  width: 18px;
+  height: 18px;
+  fill: #fff;
+}
+
+/* ═══════════════════════════════════════════
+   ACTION BUTTONS
+═══════════════════════════════════════════ */
+.actions {
+  width: calc(100% - 32px);
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.action-btn {
+  background: var(--clr-surface);
+  border: none;
+  border-radius: var(--radius-icon);
+  box-shadow: var(--shadow-icon);
+  padding: 14px 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+
+.action-btn:active {
+  transform: scale(.92);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+}
+
+.action-btn__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+}
+
+.action-btn__icon svg {
+  width: 22px;
+  height: 22px;
+  fill: #fff;
+}
+
+.action-btn__icon--rating   { background: var(--clr-icon-rating); }
+.action-btn__icon--boost    { background: var(--clr-icon-boost); }
+.action-btn__icon--settings { background: var(--clr-icon-settings); }
+
+.action-btn__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+/* ═══════════════════════════════════════════
+   BOOST BANNER
+═══════════════════════════════════════════ */
+.boost-banner {
+  width: calc(100% - 32px);
+  margin-top: 12px;
+  background: var(--clr-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 0 16px;
+}
+
+.boost-banner__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 10px;
+}
+
+.boost-banner__header {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--clr-label);
+}
+
+/* Passive income rate shown right of "Автоматически" */
+.boost-banner__rate {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #7b61ff;
+  letter-spacing: .01em;
+  transition: opacity .25s;
+}
+
+.boost-banner__divider {
+  height: 1px;
+  background: var(--clr-divider);
+}
+
+.boost-banner__btn {
+  width: 100%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 16px 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--t-fast);
+}
+
+.boost-banner__btn:active { opacity: .65; }
+
+.boost-banner__btn-icon { font-size: 18px; }
+
+.boost-banner__btn-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--clr-text);
+}
+
+/* ═══════════════════════════════════════════
+   SPACER
+═══════════════════════════════════════════ */
+.spacer { flex: 1; }
+
+/* ═══════════════════════════════════════════
+   CLICK BUTTON
+═══════════════════════════════════════════ */
+.click-area {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  margin-top: 24px;
+}
+
+.click-btn {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+/* Outer glow ring */
+.click-btn__ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: rgba(245, 200, 66, .2);
+  transition: transform var(--t-fast), opacity var(--t-fast);
+}
+
+/* Main coin face */
+.click-btn__face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #f5d44a 0%, #f0a800 60%, #e07b00 100%);
+  box-shadow: var(--shadow-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+
+.click-btn__label {
+  font-family: 'Nunito', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, .88);
+  letter-spacing: .05em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+}
+
+/* Press state — JS-controlled for reliable fast-tap response (bug 3 fix).
+   :active kept as fallback for desktop mouse users. */
+.click-btn.is-pressed .click-btn__face,
+.click-btn:active      .click-btn__face {
+  transform: translateY(8px);
+  box-shadow: var(--shadow-btn-press);
+}
+
+.click-btn.is-pressed .click-btn__ring,
+.click-btn:active      .click-btn__ring {
+  transform: scale(.92);
+  opacity: .5;
+}
+
+/* ═══════════════════════════════════════════
+   FLOAT POP  (+N animation)
+═══════════════════════════════════════════ */
+.float-pop {
+  position: absolute;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--clr-coin-deep);
+  text-shadow: 0 1px 4px rgba(255, 255, 255, .5);
+  pointer-events: none;
+  z-index: 10;
+  animation: floatUp .7s var(--ease-out) forwards;
+}
+
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateY(0)    scale(1); }
+  50%  { opacity: 1; transform: translateY(-36px) scale(1.18); }
+  100% { opacity: 0; transform: translateY(-60px) scale(.9); }
+}
+
+/* ═══════════════════════════════════════════
+   SHEET BACKDROP
+═══════════════════════════════════════════ */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s var(--ease-out);
+  z-index: 100;
+}
+
+.sheet-backdrop.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ═══════════════════════════════════════════
+   BOOST SHEET
+═══════════════════════════════════════════ */
+.boost-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 390px;
+  background: var(--clr-surface);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, .15);
+  transition: transform .35s var(--ease-out);
+  z-index: 101;
+  /* Allow vertical scroll inside sheet, block horizontal */
+  touch-action: pan-y;
+  overflow: hidden;
+}
+
+.boost-sheet.is-open {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Handle bar */
+.boost-sheet__handle {
+  width: 40px;
+  height: 4px;
+  background: var(--clr-divider);
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+
+/* Header */
+.boost-sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 10px;
+}
+
+.boost-sheet__title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--clr-text);
+}
+
+.boost-sheet__close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--clr-divider);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--clr-label);
+  font-size: 14px;
+  font-weight: 700;
+  transition: background var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.boost-sheet__close:active {
+  background: #cdd4e0;
+}
+
+/* Scrollable list */
+.boost-sheet__list {
+  padding: 4px 16px 36px;
+  overflow-y: auto;
+  max-height: 68vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Boost row ───────────────────────── */
+.boost-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--clr-divider);
+}
+
+.boost-row:last-child {
+  border-bottom: none;
+}
+
+/* Icon */
+.boost-row__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--clr-bg);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Info column */
+.boost-row__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.boost-row__name {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.boost-row__rate {
+  font-size: 12px;
+  font-weight: 600;
+  color: #7b61ff;
+}
+
+.boost-row__owned {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--clr-label);
+  min-height: 14px;
+}
+
+/* Buy button */
+.boost-row__buy {
+  border: none;
+  background: linear-gradient(135deg, #eef1fd, #dce2f8);
+  border-radius: 20px;
+  padding: 9px 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.boost-row__buy:active:not(:disabled) {
+  transform: scale(.94);
+  opacity: .8;
+}
+
+.boost-row__buy:disabled {
+  opacity: .38;
+  cursor: default;
+}
+
+.boost-row__buy-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #4a5af0;
+  white-space: nowrap;
+}
+
+/* Coin dot on buy button */
+.boost-row__buy-coin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--clr-coin), #e8a800);
+  box-shadow: 0 1px 4px rgba(200, 144, 43, .4);
+  flex-shrink: 0;
+}
+
