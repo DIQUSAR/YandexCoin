@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Кликер</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="CSS/style.css" />
+
+  <!-- ── Яндекс SDK ───────────────────── -->
+  <script>
+    let _resolveSDK;
+    window.yandexSDKPromise = new Promise(resolve => { _resolveSDK = resolve; });
+    async function initSDK() {
+      try {
+        const ysdk = await YaGames.init();
+        window.yandexSDK = ysdk;
+        _resolveSDK(ysdk);
+        // Сигнал Яндексу что игра загружена и готова
+        ysdk.features.LoadingAPI?.ready();
+      } catch (e) {
+        console.warn('[SDK] Инициализация не удалась:', e);
+        // Резолвим null — игра запустится без SDK
+        _resolveSDK(null);
+      }
+    }
+  </script>
+  <script async src="/sdk.js" onload="initSDK()"></script>
+
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ── Balance card ─────────────────── -->
+  <div class="balance-card">
+    <span class="balance-card__label" data-i18n="balance.label">Ваш счёт</span>
+    <div class="balance-card__row">
+      <div class="odometer" id="odometer"></div>
+      <div class="coin-badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5
+            19h.5v3c4.86-2.34 8-7 8-11.5C20 5.81 16.19 2
+            11.5 2zm1 14.5h-2v-2h2v2zm0-4h-2v-6h2v6z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Action buttons ───────────────── -->
+  <div class="actions">
+
+    <button class="action-btn" id="btnRating" aria-label="Рейтинг">
+      <div class="action-btn__icon action-btn__icon--rating">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12
+            2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+      </div>
+      <span class="action-btn__label" data-i18n="actions.rating">Рейтинг</span>
+    </button>
+
+    <button class="action-btn" id="btnBoost" aria-label="Ускорения">
+      <div class="action-btn__icon action-btn__icon--boost">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+        </svg>
+      </div>
+      <span class="action-btn__label" data-i18n="actions.boost">Ускорения</span>
+    </button>
+
+    <button class="action-btn" id="btnSettings" aria-label="Настройки">
+      <div class="action-btn__icon action-btn__icon--settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+        </svg>
+      </div>
+      <span class="action-btn__label" data-i18n="actions.settings">Настройки</span>
+    </button>
+
+  </div>
+
+  <!-- ── Boost banner ──────────────────── -->
+  <div class="boost-banner">
+    <div class="boost-banner__header-row">
+      <span class="boost-banner__header" data-i18n="boostBanner.header">Автоматически</span>
+      <span class="boost-banner__rate" id="passiveRateDisplay"></span>
+    </div>
+    <div class="boost-banner__divider"></div>
+    <button class="boost-banner__btn" id="btnGetBoost" aria-label="Получить ускорение">
+      <span class="boost-banner__btn-icon" aria-hidden="true">⚡</span>
+      <span class="boost-banner__btn-text" data-i18n="boostBanner.btnLabel">Получить ускорение</span>
+    </button>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- ── Click button ──────────────────── -->
+  <div class="click-area">
+    <button class="click-btn" id="clickBtn" aria-label="Нажать для получения монет">
+      <div class="click-btn__ring"></div>
+      <div class="click-btn__face">
+        <span class="click-btn__label" data-i18n="clickBtn.label" aria-hidden="true">tap</span>
+      </div>
+    </button>
+  </div>
+
+</div>
+
+<!-- Load order matters: each file depends on the ones above it -->
+<!-- ── Boost Sheet ──────────────────── -->
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="boost-sheet" id="boostSheet" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="boost-sheet__handle"></div>
+  <div class="boost-sheet__header">
+    <span class="boost-sheet__title" data-i18n="boostSheet.title">Ускорения</span>
+    <button class="boost-sheet__close" id="boostSheetClose" aria-label="Закрыть">✕</button>
+  </div>
+  <div class="boost-sheet__list" id="boostList"></div>
+</div>
+
+
+<script src="JS/i18n.js"></script>
+<script src="JS/config.js"></script>
+<script src="JS/state.js"></script>
+<script src="JS/audio.js"></script>
+<script src="JS/boosts.js"></script>
+<script src="JS/odometer.js"></script>
+<script src="JS/float-pop.js"></script>
+<script src="JS/adv.js"></script>
+<script src="JS/yandex_sync.js"></script>
+<script src="JS/game-ready.js"></script>
+<script src="JS/input.js"></script>
+<script src="JS/main.js"></script>
+</body>
+</html>
